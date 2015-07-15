@@ -5,10 +5,11 @@ from indiegogo import (
 	get_individual, 
 	get_username,
 	get_activities,
-	get_categories,
+	get_category,
 	get_activity_links,
 	verify,
-	verify_contribution
+	verify_contribution,
+	store_valid_user
 	)
 
 # globals
@@ -35,6 +36,9 @@ support_activities = get_activities(support_user)
 
 actual_user = get_individual(101)
 actual_activities = get_activities(actual_user)
+
+contributions = verify_contribution(actual_activities)
+links = get_activity_links(actual_activities)
 
 class TestIndieGoGo(unittest.TestCase):
 
@@ -90,19 +94,27 @@ class TestIndieGoGo(unittest.TestCase):
 
 	def test_get_activity_links(self):
 		links = get_activity_links(actual_activities)
-		# this is where you left off 
-		expected = '/projects/1112759'
-		self.assertEqual(links[0], expected)
+		expected = 'projects/1317959'
+		self.assertEqual(links[0], expected, "This test may fail from time to time")
 
-	def test_get_categories(self):
+	def test_get_category(self):
 		"""
 		looks for 'i-glyph-icon-30-film' in class tree
 		of each project
 		"""
-		links = get_activity_links(actual_activities)
-		
+		# see globals
+		link = "projects/star-trek-axanar"
+		observed = get_category(link)
+		expected = True
+		self.assertEqual(observed, expected)
 
-		
+	def test_store_user(self):
+		id = 101
+		username = "GoGo Support"
+		url = INDIVIDUAL.format(id)
+		contribs = 5
+		store_valid_user(id, username, url, contribs)
+
 
 if __name__ == '__main__':
 	unittest.main()
