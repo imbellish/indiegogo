@@ -72,7 +72,10 @@ def get_activities(individual):
 	activities_page = requests.get(ACTIVITIES.format(id))
 	doc = html.fromstring(activities_page.text)
 	activities = doc.find_class("i-right-of-small-photo")
-	activities[0].id = id
+	try:
+		activities[0].id = id
+	except: 
+		return False
 	return activities
 
 def get_activity_links(activities):
@@ -82,7 +85,7 @@ def get_activity_links(activities):
 	links = []
 	for i, activity in enumerate(activities):
 		link = next(activity.iterlinks())[2][1:]
-		links.append(link)
+		links.append(link) # bool object is not iterable
 	return links
 
 def get_category(link):
@@ -93,8 +96,11 @@ def get_category(link):
 	req = requests.get(BASE_URL+link)
 	doc = html.fromstring(req.text)
 	link = doc.find_class('i-keep-it-together')
-	links = link[1].iterlinks()
-	parse = next(links)[2]
+	try:
+		links = link[1].iterlinks()
+		parse = next(links)[2]
+	except:
+		return False
 	category = parse.split("/")[2].title()
 	if category == DESIRED_CATEGORY:
 		return True
@@ -128,7 +134,7 @@ def store_valid_user(id, individual, url, number_of_contribs):
 
 if __name__ == '__main__':
 	
-	for i in range(101, 150):
+	for i in range(5050, 10000):
 		contribs = 0
 		individual = get_individual(i)
 		#activities = get_activities(individual)
@@ -138,29 +144,16 @@ if __name__ == '__main__':
 			url = individual.url
 
 			activities = get_activities(individual)
-			links = get_activity_links(activities)
+			try:
+				links = get_activity_links(activities)
+			except TypeError:
+				continue
 			for link in links:
 				if get_category(link):
-					contrib += 1
-			if contrib > 10:
-				store_valid_user(id, username, url, contrib)
+					contribs += 1
+			if contribs > 5:
+				store_valid_user(id, username, url, contribs)
+				print(str((id, username, url, contribs)) + " created")
 
-	"""
-
-	# for i in range(1000000000)...
-	#support_user = get_individual(100)
-	#support_activities = get_activities(support_user)
-	
-	
-	actual_user = get_individual(101)
-	# if verify(actual_user):
-	#     ...
-	actual_activities = get_activities(actual_user)
-	
-	contributions = verify_contribution(actual_activities)
-	for i, truth in enumerate(contributions):
-		if truth:
-			link = get_activity_links(actual_activities[i])
-			category = get_category(link)"""
 
 
